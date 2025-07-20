@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL to MongoDB Migrator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <header class="bg-primary text-white p-3 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1><i class="fas fa-exchange-alt"></i> SQL to MongoDB Migrator</h1>
+                    <p class="mb-0">Migrate your SQL data to MongoDB collections with custom column selection</p>
+                </div>
+                <div>
+                    <a href="/api-docs" class="btn btn-outline-light me-2" target="_blank">
+                        <i class="fas fa-code"></i> Interactive API Docs
+                    </a>
+                    <a href="/api-docs.html" class="btn btn-outline-light" target="_blank">
+                        <i class="fas fa-book"></i> API Guide
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="row">
+            <!-- SQL Database Connection -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5><i class="fas fa-database"></i> SQL Database Connection</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="sqlConnectionForm">
+                            <div class="mb-3">
+                                <label class="form-label">Database Type</label>
+                                <select class="form-select" id="sqlType" required>
+                                    <option value="">Select Database Type</option>
+                                    <option value="mysql">MySQL</option>
+                                    <option value="postgresql">PostgreSQL</option>
+                                    <option value="mssql">SQL Server</option>
+                                </select>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <label class="form-label">Host</label>
+                                        <input type="text" class="form-control" id="sqlHost" value="localhost" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Port</label>
+                                        <input type="number" class="form-control" id="sqlPort" placeholder="Default">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Database Name</label>
+                                <input type="text" class="form-control" id="sqlDatabase" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="sqlUsername" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Password</label>
+                                        <input type="password" class="form-control" id="sqlPassword" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-info">
+                                <i class="fas fa-plug"></i> Connect to SQL Database
+                            </button>
+                        </form>
+                        <div id="sqlStatus" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MongoDB Connection -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5><i class="fas fa-leaf"></i> MongoDB Connection</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="mongoConnectionForm">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <label class="form-label">Host</label>
+                                        <input type="text" class="form-control" id="mongoHost" value="localhost" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Port</label>
+                                        <input type="number" class="form-control" id="mongoPort" value="27017">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Database Name</label>
+                                <input type="text" class="form-control" id="mongoDatabase" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Username (Optional)</label>
+                                        <input type="text" class="form-control" id="mongoUsername">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Password (Optional)</label>
+                                        <input type="password" class="form-control" id="mongoPassword">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Auth Source (Optional)</label>
+                                <input type="text" class="form-control" id="mongoAuthSource" placeholder="admin">
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plug"></i> Connect to MongoDB
+                            </button>
+                        </form>
+                        <div id="mongoStatus" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CDC Section -->
+        <div id="cdcSection" class="d-none">
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5><i class="fas fa-sync-alt"></i> Change Data Capture (CDC)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Setup Real-time Sync</h6>
+                            <form id="cdcSetupForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Select SQL Table</label>
+                                    <select class="form-select" id="cdcTableSelect">
+                                        <option value="">Select a table</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Timestamp Column</label>
+                                    <select class="form-select" id="timestampColumn" required>
+                                        <option value="">Select timestamp column</option>
+                                    </select>
+                                    <div class="form-text">Column used to track changes (updated_at, modified_date, etc.)</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Primary Key Column</label>
+                                    <select class="form-select" id="primaryKeyColumn" required>
+                                        <option value="">Select primary key</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">MongoDB Collection Name</label>
+                                    <input type="text" class="form-control" id="cdcCollectionName" required>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Polling Interval (ms)</label>
+                                            <input type="number" class="form-control" id="pollingInterval" value="5000" min="1000">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Batch Size</label>
+                                            <input type="number" class="form-control" id="cdcBatchSize" value="1000" min="1">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">WHERE Clause (Optional)</label>
+                                    <input type="text" class="form-control" id="cdcWhereClause" placeholder="e.g., status = 'active'">
+                                </div>
+                                
+                                <button type="button" class="btn btn-outline-info me-2" id="testCdcConfig">
+                                    <i class="fas fa-vial"></i> Test Configuration
+                                </button>
+                                <button type="submit" class="btn btn-secondary">
+                                    <i class="fas fa-play"></i> Start CDC Job
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Active CDC Jobs</h6>
+                            <div id="cdcJobsList">
+                                <p class="text-muted">No active CDC jobs</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Migration Section -->
+        <div id="migrationSection" class="d-none">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="fas fa-exchange-alt"></i> Data Migration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Table Selection -->
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Select SQL Table</label>
+                                <select class="form-select" id="tableSelect">
+                                    <option value="">Select a table</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Collection Name -->
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">MongoDB Collection Name</label>
+                                <input type="text" class="form-control" id="collectionName" placeholder="Enter collection name">
+                            </div>
+                        </div>
+                        
+                        <!-- Batch Size -->
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Batch Size</label>
+                                <input type="number" class="form-control" id="batchSize" value="1000" min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column Selection -->
+                    <div id="columnSelection" class="d-none">
+                        <h6>Select Columns to Migrate:</h6>
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-2" id="selectAllColumns">
+                                Select All
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllColumns">
+                                Deselect All
+                            </button>
+                        </div>
+                        <div id="columnCheckboxes" class="row"></div>
+                    </div>
+
+                    <!-- WHERE Clause -->
+                    <div class="mb-3">
+                        <label class="form-label">WHERE Clause (Optional)</label>
+                        <input type="text" class="form-control" id="whereClause" placeholder="e.g., id > 100 AND status = 'active'">
+                        <div class="form-text">Add conditions to filter the data you want to migrate</div>
+                    </div>
+
+                    <!-- Preview Data -->
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-info" id="previewData">
+                            <i class="fas fa-eye"></i> Preview Data
+                        </button>
+                    </div>
+
+                    <!-- Data Preview -->
+                    <div id="dataPreview" class="d-none">
+                        <h6>Data Preview (First 10 rows):</h6>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm" id="previewTable">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Migration Button -->
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-warning btn-lg" id="startMigration">
+                            <i class="fas fa-rocket"></i> Start Migration
+                        </button>
+                    </div>
+
+                    <!-- Migration Progress -->
+                    <div id="migrationProgress" class="mt-3 d-none">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"></div>
+                        </div>
+                        <div id="migrationStatus" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

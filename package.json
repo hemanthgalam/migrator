@@ -1,0 +1,42 @@
+{
+  "name": "sql-to-mongo-migrator",
+  "version": "1.0.0",
+  "description": "A tool for migrating SQL database data to MongoDB collections with customizable column selection",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "mocha test/**/*.test.js --timeout 10000",
+    "test:watch": "mocha test/**/*.test.js --watch --timeout 10000",
+    "test:coverage": "nyc mocha test/**/*.test.js --timeout 10000",
+    "test:unit": "mocha test/unit/**/*.test.js --timeout 5000",
+    "test:integration": "mocha test/integration/**/*.test.js --timeout 15000",
+    "test:api": "mocha test/api/**/*.test.js --timeout 10000"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongodb": "^6.3.0",
+    "mysql2": "^3.6.5",
+    "pg": "^8.11.3",
+    "mssql": "^10.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "uuid": "^9.0.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "winston": "^3.11.0",
+    "prom-client": "^15.1.0",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "mocha": "^10.2.0",
+    "chai": "^4.3.10",
+    "supertest": "^6.3.3",
+    "sinon": "^17.0.1",
+    "nyc": "^15.1.0"
+  },
+  "keywords": ["sql", "mongodb", "migration", "database"],
+  "author": "",
+  "license": "MIT"
+}
