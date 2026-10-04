@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS runs (
   rows_filtered INTEGER NOT NULL DEFAULT 0,
   batches INTEGER NOT NULL DEFAULT 0,
   rows_total INTEGER,
+  version INTEGER NOT NULL DEFAULT 0,
   error TEXT,
   queued_at TEXT NOT NULL,
   started_at TEXT,
@@ -81,6 +82,9 @@ function openDatabase(file) {
   const db = new DatabaseSync(file);
   db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
   db.exec(SCHEMA);
+  // Columns added after the first release.
+  const runColumns = db.prepare('PRAGMA table_info(runs)').all().map((c) => c.name);
+  if (!runColumns.includes('version')) db.exec('ALTER TABLE runs ADD COLUMN version INTEGER NOT NULL DEFAULT 0');
   return db;
 }
 

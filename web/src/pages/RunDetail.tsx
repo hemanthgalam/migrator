@@ -6,8 +6,8 @@ import { runProgress } from '../components/RunsTable';
 import { Badge, Button, Card, CardHeader, ErrorBanner, Loading, PageHeader, Progress, StatusBadge, useToast } from '../components/ui';
 import { api } from '../lib/api';
 import { fmtDateTime, fmtDuration, fmtNumber, fmtRelative, runDuration } from '../lib/format';
-import { useApi, useNow } from '../lib/hooks';
-import { useLive } from '../lib/live';
+import { useNow } from '../lib/hooks';
+import { mergeLogs, newerRun, useLive } from '../lib/live';
 import type { LogEntry, Run } from '../lib/types';
 
 const LEVEL: Record<LogEntry['level'], string> = {
@@ -31,32 +31,40 @@ export default function RunDetail() {
   const navigate = useNavigate();
   const toast = useToast();
   const now = useNow(500);
-  const run = useApi<Run>(`/runs/${id}`);
-  const logs = useApi<LogEntry[]>(`/runs/${id}/logs`);
+  // Live events and API responses race each other, so every update is merged:
+  // runs keep the highest version, logs are unioned by id.
+  const [runState, setRunState] = useState<{ data?: Run; error?: Error }>({});
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [busy, setBusy] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
   const [follow, setFollow] = useState(true);
+  const applyRun = (incoming: Run) => setRunState((s) => ({ data: newerRun(s.data, incoming) }));
+
+  useEffect(() => {
+    setRunState({});
+    setLogs([]);
+    api.get<Run>(`/runs/${id}`).then(applyRun).catch((error) => setRunState({ error }));
+    api.get<LogEntry[]>(`/runs/${id}/logs`).then((fetched) => setLogs((l) => mergeLogs(l, fetched))).catch(() => {});
+  }, [id]);
 
   useLive((e) => {
-    if (e.type === 'run' && e.data.id === id) run.setData(e.data);
-    if (e.type === 'log' && e.data.runId === id) {
-      logs.setData((list) => (list && !list.some((l) => l.id === e.data.id) ? [...list, e.data] : list));
-    }
+    if (e.type === 'run' && e.data.id === id) applyRun(e.data);
+    if (e.type === 'log' && e.data.runId === id) setLogs((l) => mergeLogs(l, [e.data]));
   });
 
   useEffect(() => {
     if (follow && logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
-  }, [logs.data, follow]);
+  }, [logs, follow]);
 
-  if (run.error) return <ErrorBanner error={run.error} />;
-  const r = run.data;
+  if (runState.error) return <ErrorBanner error={runState.error} />;
+  const r = runState.data;
   if (!r) return <Loading />;
   const p = runProgress(r);
   const isActive = ['queued', 'retrying', 'running'].includes(r.status);
 
   async function cancel() {
     setBusy(true);
-    try { run.setData(await api.post<Run>(`/runs/${id}/cancel`)); } catch (e) { toast({ tone: 'error', title: 'Cancel failed', description: (e as Error).message }); }
+    try { applyRun(await api.post<Run>(`/runs/${id}/cancel`)); } catch (e) { toast({ tone: 'error', title: 'Cancel failed', description: (e as Error).message }); }
     setBusy(false);
   }
 
@@ -121,7 +129,7 @@ export default function RunDetail() {
           actions={<label className="flex items-center gap-2 text-xs text-2"><input type="checkbox" checked={follow} onChange={(e) => setFollow(e.target.checked)} className="accent-brand-600" />Follow</label>}
         />
         <div ref={logRef} className="max-h-[28rem] overflow-auto bg-[#0b1020] px-5 py-4 font-mono text-xs leading-6" data-testid="run-logs">
-          {(logs.data || []).map((l) => (
+          {logs.map((l) => (
             <div key={l.id} className="flex gap-3">
               <span className="shrink-0 text-slate-500">{new Date(l.ts).toLocaleTimeString('en-US', { hour12: false })}</span>
               <span className={clsx('w-14 shrink-0 uppercase', LEVEL[l.level])}>{l.level}</span>

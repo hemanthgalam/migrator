@@ -67,6 +67,7 @@ export interface Run {
   startedAt: string | null;
   finishedAt: string | null;
   nextAttemptAt: string | null;
+  version: number;
 }
 
 export interface Pipeline {

@@ -1,6 +1,13 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { LogEntry, Run } from './types';
 
+/** Union of two log lists, ordered and de-duplicated by id. */
+export function mergeLogs(a: LogEntry[] = [], b: LogEntry[] = []): LogEntry[] {
+  const byId = new Map<number, LogEntry>();
+  for (const l of [...a, ...b]) byId.set(l.id, l);
+  return [...byId.values()].sort((x, y) => x.id - y.id);
+}
+
 type LiveEvent = { type: 'run'; data: Run } | { type: 'log'; data: LogEntry } | { type: 'queue'; data: unknown };
 type Listener = (e: LiveEvent) => void;
 
@@ -42,6 +49,11 @@ export function useLive(handler?: Listener) {
   return ctx.connected;
 }
 
+/** The fresher of two snapshots of the same run; responses and events can arrive out of order. */
+export function newerRun(current: Run | undefined, incoming: Run): Run {
+  return current && current.id === incoming.id && current.version > incoming.version ? current : incoming;
+}
+
 /** Merge a live run update into a list, newest first. */
 export function upsertRun(list: Run[] | undefined, run: Run, filter?: (r: Run) => boolean): Run[] {
   const current = list || [];
@@ -49,6 +61,6 @@ export function upsertRun(list: Run[] | undefined, run: Run, filter?: (r: Run) =
   const i = current.findIndex((r) => r.id === run.id);
   if (i === -1) return [run, ...current];
   const next = current.slice();
-  next[i] = run;
+  next[i] = newerRun(current[i], run);
   return next;
 }

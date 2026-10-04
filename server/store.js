@@ -47,6 +47,8 @@ const mapRun = (r) => r && ({
   startedAt: r.started_at,
   finishedAt: r.finished_at,
   nextAttemptAt: r.next_attempt_at,
+  // Bumped on every change so clients can drop updates that arrive out of order.
+  version: r.version,
 });
 
 const RUN_COLUMNS = {
@@ -151,7 +153,7 @@ function createStore(db) {
     },
     updateRun(id, patch) {
       const { sets, values } = toDb(RUN_COLUMNS, patch);
-      if (sets.length) db.prepare(`UPDATE runs SET ${sets.join(', ')} WHERE id = ?`).run(...values, id);
+      if (sets.length) db.prepare(`UPDATE runs SET ${sets.join(', ')}, version = version + 1 WHERE id = ?`).run(...values, id);
       return this.getRun(id);
     },
     // Atomically move the oldest due run to "running". Returns null if none is due.
@@ -161,7 +163,7 @@ function createStore(db) {
       const row = db.prepare(`SELECT id FROM runs WHERE status IN ('queued', 'retrying') AND (next_attempt_at IS NULL OR next_attempt_at <= ?) ${exclude}
         ORDER BY COALESCE(next_attempt_at, queued_at), rowid LIMIT 1`).get(ts, ...excludePipelineIds);
       if (!row) return null;
-      const res = db.prepare("UPDATE runs SET status = 'running', started_at = ?, finished_at = NULL, next_attempt_at = NULL, error = NULL WHERE id = ? AND status IN ('queued', 'retrying')").run(ts, row.id);
+      const res = db.prepare("UPDATE runs SET status = 'running', version = version + 1, started_at = ?, finished_at = NULL, next_attempt_at = NULL, error = NULL WHERE id = ? AND status IN ('queued', 'retrying')").run(ts, row.id);
       return res.changes ? this.getRun(row.id) : null;
     },
     nextRetryAt() {
@@ -170,7 +172,7 @@ function createStore(db) {
     activeRunForPipeline: (pipelineId) => db.prepare("SELECT id FROM runs WHERE pipeline_id = ? AND status IN ('queued', 'retrying', 'running') LIMIT 1").get(pipelineId),
     recoverInterruptedRuns() {
       const rows = db.prepare("SELECT id FROM runs WHERE status = 'running'").all();
-      db.prepare("UPDATE runs SET status = 'queued', started_at = NULL, rows_read = 0, rows_written = 0, rows_filtered = 0, batches = 0 WHERE status = 'running'").run();
+      db.prepare("UPDATE runs SET status = 'queued', version = version + 1, started_at = NULL, rows_read = 0, rows_written = 0, rows_filtered = 0, batches = 0 WHERE status = 'running'").run();
       return rows.map((r) => r.id);
     },
 
