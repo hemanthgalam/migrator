@@ -112,3 +112,24 @@ npm run test:e2e:demo  # builds the static demo and tests it
 ```
 
 The Playwright suite drives the real app in Chromium: building a pipeline in the wizard and running it, live progress and cancellation, concurrency limits and queueing, retries with backoff, permanent failures and manual retry, schedules, CSV uploads and previews, connection testing and secret masking, dark mode, and mobile navigation. CI runs everything on each pull request, with a Postgres service for the connector test.
+
+## Load testing
+
+`scripts/loadtest.js` boots the real server once per worker-concurrency level, creates pipelines through the API, enqueues one run per pipeline at the same moment, and reports throughput, queue wait, peak concurrent runs, CPU and memory from the server's own run records.
+
+```bash
+npm run loadtest -- --pipelines 32 --rows 100000 --concurrency 1,2,4,8,16
+PG_URL=postgres://user:pass@localhost:5432/db npm run loadtest -- --scenario postgres
+```
+
+Results on a 4 vCPU Xeon @ 2.1 GHz with 16 GB RAM (Node 22, Postgres 16 on the same machine), 32 pipelines × 100,000 rows = 3.2M rows per level:
+
+| Workers | CSV: sample → 5 transforms → file | Postgres → 3 transforms → Postgres |
+| ---: | ---: | ---: |
+| 1 | 212k rows/s (15.1 s) | 53k rows/s (60.8 s) |
+| 2 | 215k rows/s (14.9 s) | 86k rows/s (37.4 s) |
+| 4 | 219k rows/s (14.6 s) | 121k rows/s (26.5 s) |
+| 8 | 192k rows/s (16.7 s) | 123k rows/s (26.0 s) |
+| 16 | 216k rows/s (14.8 s) | 108k rows/s (29.8 s) |
+
+The CSV path is CPU-bound in a single Node process, so extra workers only interleave it. Database pipelines wait on I/O, so concurrency gives a 2.3× speed-up up to the core count.

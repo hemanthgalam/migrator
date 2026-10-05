@@ -18,7 +18,8 @@
     "test": "node --test --test-concurrency=1 \"server/test/**/*.test.js\"",
     "test:e2e": "npm run build && playwright test",
     "test:e2e:demo": "VITE_BASE=/migrator/ npm run build:demo && playwright test --config playwright.demo.config.ts",
-    "check": "npm run typecheck && npm test && npm run build && npm run test:e2e"
+    "check": "npm run typecheck && npm test && npm run build && npm run test:e2e",
+    "loadtest": "node scripts/loadtest.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
