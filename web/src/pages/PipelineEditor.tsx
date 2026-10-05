@@ -41,7 +41,7 @@ function Stepper({ step, setStep, canVisit }: { step: number; setStep: (n: numbe
               i < step ? 'bg-brand-600 text-white' : step === i ? 'bg-brand-600 text-white' : 'surface-2 text-2')}>
               {i < step ? <Check className="size-3.5" /> : i + 1}
             </span>
-            <span className={clsx('font-medium', step === i ? 'text-brand-700 dark:text-indigo-300' : 'text-1')}>{label}</span>
+            <span className={clsx('font-medium', step === i ? 'text-brand-700 dark:text-sky-300' : 'text-1')}>{label}</span>
           </button>
         </li>
       ))}

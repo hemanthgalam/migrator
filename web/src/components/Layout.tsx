@@ -51,7 +51,7 @@ function WorkerStatus() {
 function DemoBanner() {
   const reset = () => import('../demo/server').then((m) => m.resetDemo());
   return (
-    <div className="border-b border-brand-100 bg-brand-50 px-4 py-2 text-[13px] text-brand-700 sm:px-6 lg:px-8 dark:border-brand-600/30 dark:bg-brand-600/10 dark:text-indigo-300" data-testid="demo-banner">
+    <div className="border-b border-brand-200 bg-brand-50 px-4 py-2 text-[13px] text-navy-800 sm:px-6 lg:px-8 dark:border-brand-600/30 dark:bg-brand-600/10 dark:text-sky-200" data-testid="demo-banner">
       <span className="font-medium">Browser demo.</span> Pipelines run in this tab with sample data and file storage, and your changes stay in this browser.
       Databases need the <a className="underline" href="https://github.com/hemanthgalam/migrator#quick-start">self-hosted server</a>.{' '}
       <button className="underline" onClick={reset}>Reset demo</button>
@@ -66,14 +66,7 @@ export function Layout({ children }: { children: ReactNode }) {
   useEffect(() => setMenuOpen(false), [location.pathname]);
 
   const sidebar = (
-    <div className="flex h-full flex-col gap-6 px-3 py-5">
-      <Link to="/" className="flex items-center gap-2.5 px-2">
-        <span className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-sm">
-          <Workflow className="size-4.5" />
-        </span>
-        <span className="text-[15px] font-semibold tracking-tight text-1">Migrator</span>
-        <span className="rounded-md bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 uppercase dark:bg-brand-600/15 dark:text-indigo-300">ETL</span>
-      </Link>
+    <div className="flex h-full flex-col gap-6 overflow-y-auto px-3 py-5">
       <nav className="flex flex-col gap-0.5" aria-label="Main">
         {NAV.map(({ to, label, icon: Icon, end }) => (
           <NavLink
@@ -81,8 +74,10 @@ export function Layout({ children }: { children: ReactNode }) {
             to={to}
             end={end}
             className={({ isActive }) => clsx(
-              'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors',
-              isActive ? 'bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-indigo-300' : 'text-2 hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]',
+              'flex items-center gap-2.5 rounded-lg border-l-[3px] px-2.5 py-2 text-sm transition-colors',
+              isActive
+                ? 'border-brand-600 bg-brand-50 font-semibold text-brand-600 dark:border-brand-400 dark:bg-brand-500/15 dark:text-sky-300'
+                : 'border-transparent font-medium text-2 hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]',
             )}
           >
             <Icon className="size-4" />{label}
@@ -90,40 +85,45 @@ export function Layout({ children }: { children: ReactNode }) {
         ))}
         <a
           href={`${import.meta.env.BASE_URL}api-docs/`}
-          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-2 transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+          className="flex items-center gap-2.5 rounded-lg border-l-[3px] border-transparent px-2.5 py-2 text-sm font-medium text-2 transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
         >
           <BookOpen className="size-4" />API docs
         </a>
       </nav>
-      <div className="mt-auto space-y-3">
+      <div className="mt-auto">
         <WorkerStatus />
-        <button onClick={toggleTheme} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-2 hover:bg-[var(--surface-2)]" aria-label="Toggle theme">
-          {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-        </button>
       </div>
     </div>
   );
 
   return (
     <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 hidden w-60 border-r border-default surface lg:block">{sidebar}</aside>
+      <header className="fixed inset-x-0 top-0 z-50 flex h-12 items-center gap-3 bg-navy-800 px-3 text-white shadow-sm sm:px-4 dark:border-b dark:border-white/10 dark:bg-navy-900">
+        <button className="rounded-md p-1.5 text-slate-200 hover:bg-white/10 lg:hidden" onClick={() => setMenuOpen((o) => !o)} aria-label="Open menu">
+          {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+        </button>
+        <Link to="/" className="flex items-center gap-2.5">
+          <span className="grid size-7 place-items-center rounded-md bg-cta-500 text-navy-900">
+            <Workflow className="size-4" />
+          </span>
+          <span className="text-[15px] font-bold tracking-tight">Migrator</span>
+          <span className="rounded border border-white/25 px-1.5 py-px text-[10px] font-semibold tracking-wide text-slate-200 uppercase">ETL</span>
+        </Link>
+        <div className="ml-auto flex items-center gap-1.5">
+          <button onClick={toggleTheme} className="rounded-full p-2 text-slate-200 hover:bg-white/10" aria-label="Toggle theme" title={theme === 'dark' ? 'Light mode' : 'Dark mode'}>
+            {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </button>
+          <Link to="/pipelines/new"><Button variant="primary" size="sm" icon={<Plus className="size-4" />}>New pipeline</Button></Link>
+        </div>
+      </header>
+      <aside className="fixed top-12 bottom-0 left-0 hidden w-60 border-r border-default surface lg:block">{sidebar}</aside>
       {menuOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setMenuOpen(false)}>
+        <div className="fixed inset-x-0 top-12 bottom-0 z-40 lg:hidden" onClick={() => setMenuOpen(false)}>
           <div className="absolute inset-0 bg-slate-950/40" />
           <aside className="absolute inset-y-0 left-0 w-64 surface shadow-xl" onClick={(e) => e.stopPropagation()}>{sidebar}</aside>
         </div>
       )}
-      <div className="lg:pl-60">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-default bg-[var(--surface-0)]/85 px-4 backdrop-blur sm:px-6 lg:px-8">
-          <button className="rounded-md p-1.5 text-2 lg:hidden" onClick={() => setMenuOpen((o) => !o)} aria-label="Open menu">
-            {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
-          <span className="text-sm font-medium text-2 lg:hidden">Migrator</span>
-          <div className="ml-auto flex items-center gap-2">
-            <Link to="/pipelines/new"><Button variant="primary" size="sm" icon={<Plus className="size-4" />}>New pipeline</Button></Link>
-          </div>
-        </header>
+      <div className="pt-12 lg:pl-60">
         {IS_DEMO && <DemoBanner />}
         <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
       </div>

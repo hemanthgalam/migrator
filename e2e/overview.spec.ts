@@ -17,6 +17,12 @@ test.describe('Workspace shell', () => {
     await expect(page.getByTestId('connection-card').filter({ hasText: 'Demo SaaS data' })).toBeVisible();
   });
 
+  test('light theme is the default, even when the OS prefers dark', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto('/');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  });
+
   test('dark mode toggles and persists across reloads', async ({ page }) => {
     await page.goto('/');
     const html = page.locator('html');
