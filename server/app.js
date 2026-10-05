@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { HttpError, route } = require('./lib/util');
 const { getConnector, describeConnectors, normalizeConfig, redactConfig, CONNECTORS } = require('./connectors');
+const { spec } = require('./openapi');
 const { validateTransforms, compileTransforms, STEP_TYPES, FILTER_OPS, CAST_TYPES, FORMAT_FNS, MASK_STRATEGIES } = require('./engine/transforms');
 
 const WEB_DIST = path.join(__dirname, '..', 'web', 'dist');
@@ -245,11 +246,19 @@ function createApp({ store, queue, bus, config }) {
     req.on('close', () => { clearInterval(ping); bus.off('event', send); });
   });
 
+  api.get('/openapi.json', (req, res) => res.json(spec));
+
   api.use((req, res) => res.status(404).json({ error: 'Not found' }));
   app.use('/api', api);
 
   if (config.serveWeb && fs.existsSync(WEB_DIST)) {
     app.use(express.static(WEB_DIST, { index: false, maxAge: '1h' }));
+    // API reference: Swagger UI over the OpenAPI document (built by web/vite.config.ts).
+    // Express matches /api-docs and /api-docs/ alike; the page needs the slash for its relative links.
+    app.get('/api-docs', (req, res) => {
+      if (!req.path.endsWith('/')) return res.redirect(301, '/api-docs/');
+      res.sendFile(path.join(WEB_DIST, 'api-docs', 'index.html'));
+    });
     app.get('*', (req, res) => res.sendFile(path.join(WEB_DIST, 'index.html')));
   }
 

@@ -58,7 +58,7 @@ function Browser({ conn, onClose }: { conn: Connection; onClose: () => void }) {
               key={s.name}
               disabled={!readable}
               onClick={() => open(s.name)}
-              className={`rounded-lg border px-3 py-1.5 font-mono text-xs transition-colors ${selected === s.name ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-indigo-300' : 'border-default text-1 hover:border-brand-500'}`}
+              className={`rounded-lg border px-3 py-1.5 font-mono text-xs transition-colors ${selected === s.name ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-sky-300' : 'border-default text-1 hover:border-brand-500'}`}
               title={s.description}
             >
               {s.name}

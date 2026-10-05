@@ -85,6 +85,8 @@ web/ (React + Vite + Tailwind)  ──REST + SSE──▶  server/app.js (Expres
 
 ## API
 
+The full reference is at **`/api-docs/`** on a running server, where Swagger UI can send requests, and on the GitHub Pages demo at `https://hemanthgalam.github.io/migrator/api-docs/` (read-only there). The OpenAPI 3.1 document is served at `/api/openapi.json` and lives in `server/openapi.js`; a unit test fails if a route is added without documenting it.
+
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/meta` | Connector and transform catalog |

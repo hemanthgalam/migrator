@@ -12,8 +12,8 @@ import type { RunStatus } from '../lib/types';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-brand-600 text-white hover:bg-brand-700 shadow-sm shadow-brand-600/20 disabled:bg-brand-600/50',
-  secondary: 'surface border border-default text-1 hover:bg-[var(--surface-2)] shadow-xs',
+  primary: 'bg-cta-500 text-navy-900 hover:bg-cta-600 shadow-sm disabled:bg-cta-500/50',
+  secondary: 'surface border border-brand-600 text-brand-600 hover:bg-brand-50 dark:border-brand-400 dark:text-sky-300 dark:hover:bg-brand-500/10',
   ghost: 'text-2 hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]',
   danger: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-600/50',
 };
@@ -25,7 +25,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLBut
     ref={ref}
     disabled={disabled || loading}
     className={clsx(
-      'inline-flex items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:cursor-not-allowed disabled:opacity-60',
+      'inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:cursor-not-allowed disabled:opacity-60',
       size === 'sm' ? 'h-8 px-3 text-[13px]' : 'h-9 px-3.5 text-sm',
       VARIANTS[variant],
       className,
@@ -149,7 +149,7 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
 const STATUS: Record<RunStatus, { label: string; cls: string; icon: ReactNode }> = {
   queued: { label: 'Queued', cls: 'bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700', icon: <Clock className="size-3.5" /> },
   retrying: { label: 'Retrying', cls: 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:ring-amber-900', icon: <RotateCw className="size-3.5" /> },
-  running: { label: 'Running', cls: 'bg-brand-50 text-brand-700 ring-brand-100 dark:bg-brand-600/15 dark:text-indigo-300 dark:ring-brand-600/30', icon: <Loader2 className="size-3.5 animate-spin" /> },
+  running: { label: 'Running', cls: 'bg-brand-50 text-brand-700 ring-brand-100 dark:bg-brand-600/15 dark:text-sky-300 dark:ring-brand-600/30', icon: <Loader2 className="size-3.5 animate-spin" /> },
   succeeded: { label: 'Succeeded', cls: 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-900', icon: <CheckCircle2 className="size-3.5" /> },
   failed: { label: 'Failed', cls: 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/50 dark:text-red-300 dark:ring-red-900', icon: <XCircle className="size-3.5" /> },
   cancelled: { label: 'Cancelled', cls: 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700', icon: <Ban className="size-3.5" /> },
@@ -167,7 +167,7 @@ export function StatusBadge({ status }: { status: RunStatus }) {
 export function Badge({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'brand' }) {
   return (
     <span className={clsx('inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium',
-      tone === 'brand' ? 'bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-indigo-300' : 'surface-2 text-2')}>
+      tone === 'brand' ? 'bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-sky-300' : 'surface-2 text-2')}>
       {children}
     </span>
   );
@@ -200,7 +200,7 @@ export function ConnectorIcon({ type, className }: { type: string; className?: s
     filesystem: 'bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300',
     http: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300',
     mongodb: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300',
-  }[type] || 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300';
+  }[type] || 'bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-sky-300';
   return <span className={clsx('grid size-8 shrink-0 place-items-center rounded-lg', tint)}>{icon}</span>;
 }
 
@@ -217,7 +217,7 @@ export function Modal({ open, onClose, title, description, children, footer, wid
   }, [open, onClose]);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/40 p-4 pt-[8vh] backdrop-blur-[2px]" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[55] flex items-start justify-center overflow-y-auto bg-slate-950/40 p-4 pt-[8vh] backdrop-blur-[2px]" onMouseDown={onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} className={clsx('surface w-full rounded-2xl border border-default shadow-2xl', wide ? 'max-w-2xl' : 'max-w-lg')} onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-4 px-6 pt-5">
           <div>

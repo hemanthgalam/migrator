@@ -70,7 +70,7 @@ export default function Pipelines() {
                     <Toggle checked={p.enabled} onChange={(v) => setEnabled(p, v)} label={`Schedule enabled for ${p.name}`} />
                     {p.enabled ? 'Enabled' : 'Paused'}
                   </label>
-                  <Button size="sm" variant="primary" icon={<Play className="size-3.5" />} loading={starting === p.id} onClick={() => runNow(p)} aria-label={`Run ${p.name}`}>
+                  <Button size="sm" icon={<Play className="size-3.5" />} loading={starting === p.id} onClick={() => runNow(p)} aria-label={`Run ${p.name}`}>
                     Run now
                   </Button>
                 </div>
