@@ -1,71 +1,22 @@
-# Multi-stage build for SQL to MongoDB Migration App
-FROM node:18-alpine AS base
-
-# Set working directory
+# Build the web console
+FROM node:22-alpine AS build
 WORKDIR /app
-
-# Install system dependencies for database drivers
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    postgresql-client \
-    mysql-client
-
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
-
-# Development stage
-FROM base AS development
-
-# Install all dependencies including dev dependencies
 RUN npm ci
+COPY web ./web
+RUN npm run build
 
-# Copy source code
-COPY . .
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-
-# Change ownership of the app directory
-RUN chown -R nodejs:nodejs /app
-USER nodejs
-
-# Expose port
+# Runtime: API, workers and the built console in one process
+FROM node:22-alpine
+ENV NODE_ENV=production DATA_DIR=/data PORT=3000
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY server ./server
+COPY --from=build /app/web/dist ./web/dist
+RUN mkdir -p /data && chown node:node /data
+USER node
+VOLUME /data
 EXPOSE 3000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/api', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-
-# Start the application in development mode
-CMD ["npm", "run", "dev"]
-
-# Production stage
-FROM base AS production
-
-# Copy source code
-COPY src ./src
-COPY public ./public
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-
-# Change ownership of the app directory
-RUN chown -R nodejs:nodejs /app
-USER nodejs
-
-# Expose port
-EXPOSE 3000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/api', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-
-# Start the application
-CMD ["npm", "start"]
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/api/health || exit 1
+CMD ["node", "server/index.js"]
