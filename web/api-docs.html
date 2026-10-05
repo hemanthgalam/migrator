@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API reference · Migrator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="swagger-ui.css" />
+    <style>
+      body { margin: 0; background: #fff; font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+      .topbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #e2e8f0; }
+      .topbar a { color: #4f46e5; font-size: 14px; font-weight: 500; text-decoration: none; }
+      .topbar a:hover { text-decoration: underline; }
+      .brand { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; color: #0f172a; }
+      .logo { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #6366f1, #4338ca); }
+      .note { margin: 16px 20px 0; padding: 10px 14px; border-radius: 8px; background: #eef2ff; color: #3730a3; font-size: 14px; }
+      .swagger-ui .info .title, .swagger-ui .opblock-tag { font-family: inherit; }
+      .swagger-ui .wrapper { max-width: 1100px; padding: 0 20px; }
+      @media (max-width: 640px) { .swagger-ui .wrapper { padding: 0 12px; } }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <span class="brand"><span class="logo"></span>Migrator API</span>
+      <a href="../" style="margin-left: auto">Back to console</a>
+      <a href="openapi.json">openapi.json</a>
+    </header>
+    <!--DEMO_NOTE-->
+    <div id="docs"></div>
+    <script src="swagger-ui-bundle.js"></script>
+    <script>
+      SwaggerUIBundle({
+        url: 'openapi.json',
+        dom_id: '#docs',
+        deepLinking: true,
+        defaultModelsExpandDepth: 0,
+        docExpansion: 'list',
+        tryItOutEnabled: false,
+        supportedSubmitMethods: __SUBMIT_METHODS__,
+      });
+    </script>
+  </body>
+</html>

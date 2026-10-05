@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Activity, Cable, LayoutDashboard, Menu, Moon, Plus, Settings, Sun, Workflow, X } from 'lucide-react';
+import { Activity, BookOpen, Cable, LayoutDashboard, Menu, Moon, Plus, Settings, Sun, Workflow, X } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { IS_DEMO } from '../lib/api';
@@ -88,6 +88,12 @@ export function Layout({ children }: { children: ReactNode }) {
             <Icon className="size-4" />{label}
           </NavLink>
         ))}
+        <a
+          href={`${import.meta.env.BASE_URL}api-docs/`}
+          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-2 transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+        >
+          <BookOpen className="size-4" />API docs
+        </a>
       </nav>
       <div className="mt-auto space-y-3">
         <WorkerStatus />

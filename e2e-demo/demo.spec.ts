@@ -59,3 +59,15 @@ test.describe('Static demo (GitHub Pages build)', () => {
     await expect(dialog.getByTestId('connection-test-result')).toContainText('need the self-hosted server');
   });
 });
+
+test('API reference is published with the static demo', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'API docs' }).click();
+  await expect(page).toHaveURL(/\/migrator\/api-docs\/$/);
+  await expect(page.getByRole('heading', { name: /Migrator API/ })).toBeVisible();
+  await expect(page.getByText('This is the static demo')).toBeVisible();
+  const queueRun = page.locator('.opblock').filter({ hasText: 'Queue a run' });
+  await queueRun.locator('.opblock-summary-control').click();
+  await expect(queueRun).toContainText('Queue a run');
+  await expect(queueRun.getByRole('button', { name: 'Try it out' })).toHaveCount(0);
+});
