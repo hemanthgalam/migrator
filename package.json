@@ -12,10 +12,12 @@
     "dev:api": "node --watch server/index.js",
     "dev:web": "vite --config web/vite.config.ts",
     "build": "vite build --config web/vite.config.ts",
+    "build:demo": "VITE_DEMO=true VITE_OUT_DIR=dist-demo vite build --config web/vite.config.ts && cp web/dist-demo/index.html web/dist-demo/404.html",
     "start": "node server/index.js",
     "typecheck": "tsc -p web/tsconfig.json --noEmit",
     "test": "node --test --test-concurrency=1 \"server/test/**/*.test.js\"",
     "test:e2e": "npm run build && playwright test",
+    "test:e2e:demo": "VITE_BASE=/migrator/ npm run build:demo && playwright test --config playwright.demo.config.ts",
     "check": "npm run typecheck && npm test && npm run build && npm run test:e2e"
   },
   "dependencies": {

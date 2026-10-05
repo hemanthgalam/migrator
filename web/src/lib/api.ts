@@ -8,7 +8,22 @@ export class ApiError extends Error {
   }
 }
 
+/** True in the static GitHub Pages build, where the API runs inside the browser. */
+export const IS_DEMO = import.meta.env.VITE_DEMO === 'true';
+
+async function demoRequest<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const { handle, DemoError } = await import('../demo/server');
+  try {
+    const data = await handle(method, path, body);
+    return (data === undefined ? undefined : structuredClone(data)) as T;
+  } catch (e) {
+    if (e instanceof DemoError) throw new ApiError(e.status, e.message, e.details);
+    throw e;
+  }
+}
+
 async function request<T>(method: string, path: string, body?: unknown, headers: Record<string, string> = {}): Promise<T> {
+  if (IS_DEMO) return demoRequest<T>(method, path, body);
   const isText = typeof body === 'string';
   const res = await fetch(`/api${path}`, {
     method,
@@ -28,3 +43,18 @@ export const api = {
   patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
   del: (path: string) => request<void>('DELETE', path),
 };
+
+/** Download a file written to a file storage connection. */
+export async function downloadFile(connectionId: string, name: string) {
+  if (!IS_DEMO) {
+    window.location.href = `/api/connections/${connectionId}/files/${encodeURIComponent(name)}`;
+    return;
+  }
+  const { fileText } = await import('../demo/server');
+  const text = fileText(connectionId, name);
+  if (text === undefined) throw new ApiError(404, 'File not found');
+  const url = URL.createObjectURL(new Blob([text], { type: name.endsWith('.csv') ? 'text/csv' : 'application/x-ndjson' }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: name });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

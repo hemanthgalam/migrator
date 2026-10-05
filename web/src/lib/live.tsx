@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { IS_DEMO } from './api';
 import type { LogEntry, Run } from './types';
 
 /** Union of two log lists, ordered and de-duplicated by id. */
@@ -19,6 +20,14 @@ export function LiveProvider({ children }: { children: ReactNode }) {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
+    if (IS_DEMO) {
+      let unsubscribe = () => {};
+      import('../demo/server').then(({ subscribe }) => {
+        setConnected(true);
+        unsubscribe = subscribe((event) => listeners.current.forEach((fn) => fn(event as LiveEvent)));
+      });
+      return () => unsubscribe();
+    }
     const es = new EventSource('/api/events');
     es.onopen = () => setConnected(true);
     es.onerror = () => setConnected(false);

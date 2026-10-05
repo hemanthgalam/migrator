@@ -5,8 +5,10 @@ web/dist/
 *.log
 test-results/
 playwright-report/
+playwright-report-demo/
 blob-report/
 coverage/
 .DS_Store
 .vscode/
 .idea/
+web/dist-demo/

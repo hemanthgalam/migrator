@@ -38,11 +38,18 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: End-to-end tests
         run: npx playwright test
+      - name: Build static demo (GitHub Pages)
+        run: npm run build:demo
+        env:
+          VITE_BASE: /migrator/
+      - name: End-to-end tests for the static demo
+        run: npx playwright test --config playwright.demo.config.ts
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: playwright-report
           path: |
             playwright-report
+            playwright-report-demo
             test-results
           retention-days: 7

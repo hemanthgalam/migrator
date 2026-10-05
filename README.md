@@ -49,6 +49,10 @@ With Docker, including Postgres, MySQL and MongoDB to try the database connector
 docker compose up --build
 ```
 
+## Browser demo (GitHub Pages)
+
+`npm run build:demo` produces a static build in `web/dist-demo` where the API runs inside the browser: the same console, a simulated worker pool with retries, cancellation and schedules, sample data and in-browser file storage (saved to localStorage). Database connectors need the real server, so the demo explains that instead of connecting. `.github/workflows/pages.yml` deploys it on every push to `main` once Pages is enabled with **Settings → Pages → Source: GitHub Actions**.
+
 ## Configuration
 
 | Variable | Default | Purpose |
@@ -102,6 +106,7 @@ web/ (React + Vite + Tailwind)  ──REST + SSE──▶  server/app.js (Expres
 npm run typecheck   # web app types
 npm test            # engine, queue, API (and Postgres when PG_HOST is set)
 npm run test:e2e    # builds the console, then runs Playwright end-to-end tests
+npm run test:e2e:demo  # builds the static demo and tests it
 ```
 
 The Playwright suite drives the real app in Chromium: building a pipeline in the wizard and running it, live progress and cancellation, concurrency limits and queueing, retries with backoff, permanent failures and manual retry, schedules, CSV uploads and previews, connection testing and secret masking, dark mode, and mobile navigation. CI runs everything on each pull request, with a Postgres service for the connector test.

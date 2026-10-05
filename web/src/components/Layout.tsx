@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { Activity, Cable, LayoutDashboard, Menu, Moon, Plus, Settings, Sun, Workflow, X } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
+import { IS_DEMO } from '../lib/api';
 import { useApi, useDebounced } from '../lib/hooks';
 import { useLive } from '../lib/live';
 import { Button } from './ui';
@@ -43,6 +44,17 @@ function WorkerStatus() {
         ))}
       </div>
       <p className="mt-1.5 text-xs text-3">{q ? `${q.active} of ${q.concurrency} busy` : '—'}</p>
+    </div>
+  );
+}
+
+function DemoBanner() {
+  const reset = () => import('../demo/server').then((m) => m.resetDemo());
+  return (
+    <div className="border-b border-brand-100 bg-brand-50 px-4 py-2 text-[13px] text-brand-700 sm:px-6 lg:px-8 dark:border-brand-600/30 dark:bg-brand-600/10 dark:text-indigo-300" data-testid="demo-banner">
+      <span className="font-medium">Browser demo.</span> Pipelines run in this tab with sample data and file storage, and your changes stay in this browser.
+      Databases need the <a className="underline" href="https://github.com/hemanthgalam/migrator#quick-start">self-hosted server</a>.{' '}
+      <button className="underline" onClick={reset}>Reset demo</button>
     </div>
   );
 }
@@ -106,6 +118,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <Link to="/pipelines/new"><Button variant="primary" size="sm" icon={<Plus className="size-4" />}>New pipeline</Button></Link>
           </div>
         </header>
+        {IS_DEMO && <DemoBanner />}
         <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>

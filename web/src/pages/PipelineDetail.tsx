@@ -5,7 +5,7 @@ import { DataTable } from '../components/DataTable';
 import { Flow } from '../components/Flow';
 import { RunsTable } from '../components/RunsTable';
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorBanner, Loading, Modal, PageHeader, useToast } from '../components/ui';
-import { api } from '../lib/api';
+import { api, downloadFile } from '../lib/api';
 import { fmtInterval } from '../lib/format';
 import { useApi } from '../lib/hooks';
 import { upsertRun, useLive } from '../lib/live';
@@ -123,7 +123,7 @@ export default function PipelineDetail() {
           {fileOutput && (
             <div className="flex gap-2 border-t border-default px-5 py-4">
               <Button size="sm" onClick={loadOutput}>Preview output</Button>
-              <a href={`/api/connections/${dest!.id}/files/${encodeURIComponent(fileOutput)}`}><Button size="sm" variant="ghost" icon={<Download className="size-3.5" />}>Download</Button></a>
+              <Button size="sm" variant="ghost" icon={<Download className="size-3.5" />} onClick={() => downloadFile(dest!.id, fileOutput!).catch((e) => toast({ tone: 'error', title: 'No output yet', description: e.message }))}>Download</Button>
             </div>
           )}
         </Card>
